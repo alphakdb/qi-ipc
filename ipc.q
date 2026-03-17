@@ -18,24 +18,6 @@ pc:{
   
 hostport:{`$$[":"=f:first a:.qi.tostr x;a;f in .Q.n;"::",a;":",a]}
 
-/ if .conf.MAX_CONNS>0, only open that many, and close after using
-ping:{[names;x]
-  if[mc:.qi.getconf[`MAX_CONNS;0];
-    if[(rem:mc-count .z.W)<count names;
-      :.z.s[;x]each rem cut names]];
-  if[count err:select from(a:([]name:(),names)#conns)where null port;
-    show err;
-    '".ipc.ping - entries not found in .ipc.conns"];
-  tmout:.conf.PING_TIMEOUT;
-  c:$[mc;
-    exec name!(.ipc.tryconnectx[;.conf.PING_TIMEOUT]each port)[;0]from a;
-    exec name!.ipc.connx[;tmout]each name from a];
-  if[count nc:where null c;.qi.info".ipc.ping - could not connect to ",","sv string nc];
-  neg[h:c where not null c]@\:x;
-  neg[h]@\:(::);
-  if[mc;hclose each h];
-  }
-
 `conns upsert enlist`name`stackname`fullname`proc`port!(4#`hub),.conf.HUB_PORT;
 
 \d .
