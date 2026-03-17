@@ -1,13 +1,11 @@
 .qi.import`event
 
-\d .ipc
-
-conns:1!flip`name`fullname`proc`stackname`port`handle`pid`lasthearbeat`error!"ssssiiip*"$\:()
-connx:{[name;tmout] if[null(e:conns name)`handle;conns[name]:e,:`handle`error!tryconnectx[e`port;tmout]];e`handle}
-conn:connx[;.conf.CONN_TIMEOUT]
-tryconnectx:{[addr;tmout] 1_.qi.try[hopen;(hostport addr;tmout);0Ni]}
-tryconnect:{[addr] tryconnectx[addr;.conf.CONN_TIMEOUT]}
-pc:{
+.ipc.conns:1!flip`name`fullname`proc`stackname`port`handle`pid`lasthearbeat`error!"ssssiiip*"$\:()
+.ipc.connx:{[name;tmout] if[null(e:.ipc.conns name)`handle;.ipc.conns[name]:e,:`handle`error!.ipc.tryconnectx[e`port;tmout]];e`handle}
+.ipc.conn:.ipc.connx[;.conf.CONN_TIMEOUT]
+.ipc.tryconnectx:{[addr;tmout] 1_.qi.try[hopen;(.ipc.hostport addr;tmout);0Ni]}
+.ipc.tryconnect:{[addr] .ipc.tryconnectx[addr;.conf.CONN_TIMEOUT]}
+.ipc.pc:{
   if[count c:select from .ipc.conns where handle=x;
     if[count subs:.proc.self.subscribe_to;
       if[count fatal:select from c where name in key subs;
@@ -16,10 +14,8 @@ pc:{
     `.ipc.conns upsert update handle:0Ni,pid:0Ni,lasthearbeat:0Np from c];
   }
   
-hostport:{`$$[":"=f:first a:.qi.tostr x;a;f in .Q.n;"::",a;":",a]}
+.ipc.hostport:{`$$[":"=f:first a:.qi.tostr x;a;f in .Q.n;"::",a;":",a]}
 
-`conns upsert enlist`name`stackname`fullname`proc`port!(4#`hub),.conf.HUB_PORT;
-
-\d .
+`.ipc.conns upsert enlist`name`stackname`fullname`proc`port!(4#`hub),.conf.HUB_PORT;
 
 .event.addhandler[`.z.pc;`.ipc.pc]
